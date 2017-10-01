@@ -1,0 +1,104 @@
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    class Pump
+    {
+        private const double PRICE = 2;
+        private const double SPEED = 1.5;
+        public enum PumpState { Empty, Busy };
+        public PumpState state = PumpState.Empty;
+        private int id;
+        public static int totalDispensed = 0;
+        public static double totalEarned = 0.0;
+        public int toDispense;
+        public static double commission;
+
+        public Pump(int _id)
+        {
+            id = _id;
+        }
+
+        public PumpState GetState()
+        {
+            return state;
+        }
+
+        public void PumpLine()
+        {
+            switch (state)
+            {
+                case PumpState.Empty:
+                default:
+                    //Console.WriteLine("Empty");
+                    try
+                    {
+                        if (Program.queue.Peek() != null)
+                        {
+                            state = PumpState.Busy;
+                            Vehicle v = Program.queue.Dequeue();
+                            //double workTime = v.HowMuchFuelNeeded() / SPEED;
+                            toDispense = v.HowMuchFuelNeeded();
+                            double workTime = 18;
+                            PumpTimer(workTime);
+                            //Console.WriteLine("{0}: {1}, {2}, {3} litres.", id, state, v.GetType().Name, toDispense);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    break;
+
+                case PumpState.Busy:
+                    break;
+            }
+        }
+
+        void PumpTimer(double interval)
+        {
+            Timer FuelTimer = new Timer();
+            FuelTimer.Interval = interval * 1000;
+            FuelTimer.Enabled = true;
+            FuelTimer.Elapsed += PumpBusy;
+        }
+
+        private void PumpBusy(object sender, ElapsedEventArgs e)
+        {
+            totalDispensed += toDispense;
+            totalEarned += toDispense * PRICE;
+            commission += 0.01 * totalEarned;
+            state = PumpState.Empty;
+            //Console.WriteLine("{0}: {1}, total dispensed: {2}, earned: {3}, commission: {4}", id, state, totalDispensed, totalEarned, commission);
+            RecordTransactions();
+        }
+
+        public void RecordTransactions()
+        {
+            int dispensed = toDispense;
+            double earned = toDispense * PRICE;
+            double commission = 0.01 * earned;
+            //Vehicle v = Program.queue.Peek();           
+                        
+            try
+            {
+                StreamWriter sw = new StreamWriter(@"C:\Users\Maja\Desktop\fuelling_transactions.txt", append: true);
+                //sw.WriteLine(DateTime.Now);
+                sw.WriteLine("Pump {0}: litres dispensed: {1}", id+1, dispensed);
+                sw.WriteLine("---------------------------------------------");                
+                sw.Close();
+
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+    }
+}

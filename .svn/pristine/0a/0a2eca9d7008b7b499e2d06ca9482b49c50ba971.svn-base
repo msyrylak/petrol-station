@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Runtime.InteropServices;
+
+//myAssignment
+//Author: Maja Syrylak
+//SID: 1611379
+//Edited: 26/04/2017
+
+namespace myAssignment
+{
+    class Program
+    {
+        public static Random random = new Random();
+
+        // create a queue of vehicles
+        public static List<Vehicle> vehicleLine = new List<Vehicle>();
+
+        [DllImport("user32.dll")] // import user32.dll library for GetAsyncKeyState function
+        public static extern bool GetAsyncKeyState(Keys vkey);
+
+        static void Main(string[] args)
+        {
+            Console.CursorVisible = false;
+
+            // a for loop to create pumps
+            for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+            {
+                for (int j = 0; j < PumpSet.pumpLine.GetLength(1); j++)
+                {
+                    PumpSet.pumpLine[i, j] = new Pump(i * PumpSet.pumpLine.GetLength(1) + j);
+                }
+            }
+
+            bool quit = false;
+            do
+            {
+                // check every vehicle if the time to be serviced ended and if it did remove it
+                foreach (Vehicle v in vehicleLine.ToList())
+                {
+                    if (v.leave == true)
+                    {
+                        vehicleLine.Remove(v);
+                        Stats.VehiclesGone++; // counter for all the vehicles that left without being serviced
+                    }
+                }
+
+                VehicleGenerator.GetVehicle();  // call a method creating new vehicles
+
+                // iterate over every pump and call a PumpLine() method
+                for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+                {
+                    for (int j = 0; j < PumpSet.pumpLine.GetLength(1); j++)
+                    {
+                        PumpSet.pumpLine[i, j].PumpLine();
+                    }
+                }
+
+                if (Utils.refresh == true)
+                {
+                    // display pump lanes
+                    for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+                    {
+                        Console.SetCursorPosition(0, i);
+                        Console.Write(new string(' ', Console.WindowWidth));
+                        Console.SetCursorPosition(0, i);
+                        Console.WriteLine("------" + PumpSet.pumpLine[i, 0].GetState() + "------" + PumpSet.pumpLine[i, 1].GetState() + "------" + PumpSet.pumpLine[i, 2].GetState() + "------");
+                    }
+
+                    Console.WriteLine();
+                    Console.SetCursorPosition(0, 5);
+                    Console.Write(new string(' ', Console.WindowWidth));
+                    Console.SetCursorPosition(0, 5);
+                    Console.WriteLine();
+                    Stats.ShowStats();
+
+                    Utils.refresh = false;
+                }
+
+                // to exit the program press escape
+                if (GetAsyncKeyState(Keys.Escape))
+                {
+                    quit = true;
+                }
+
+            } while (!quit);
+        }
+    }
+}

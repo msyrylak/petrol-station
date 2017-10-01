@@ -1,0 +1,83 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Runtime.InteropServices;
+
+//myAssignment
+//Author: Maja Syrylak
+//SID: 1611379
+//Edited: 25/04/2017
+
+namespace myAssignment
+{
+    class Program
+    {
+        public static Random random = new Random();
+
+        // creates a queue of vehicles
+        public static List<Vehicle> queue = new List<Vehicle>();
+
+        [DllImport("user32.dll")] // import user32.dll library for GetAsyncKeyState function
+        public static extern bool GetAsyncKeyState(Keys vkey);
+
+        static void Main(string[] args)
+        {
+            Console.CursorVisible = false;
+
+            // a for loop to create pumps
+            for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+            {
+                for (int j = 0; j < PumpSet.pumpLine.GetLength(1); j++)
+                {
+                    PumpSet.pumpLine[i, j] = new Pump(i * PumpSet.pumpLine.GetLength(1) + j);
+                }
+            }
+
+            bool quit = false;
+            do
+            {
+                foreach (Vehicle v in queue.ToList())
+                {
+                    if (v.leave == true)
+                    {
+                        queue.Remove(v);
+                        Vehicle.numberOfVehiclesGone++;
+                    }
+                }
+
+                VehicleGenerator.GetVehicle();  // calls a method creating new vehicles
+
+                // iterates over every pump and calls a PumpLine() method
+                for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+                {
+                    for (int j = 0; j < PumpSet.pumpLine.GetLength(1); j++)
+                    {
+                        PumpSet.pumpLine[i, j].PumpLine();
+                    }
+
+                }
+
+                // displays pump lanes
+                for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+                {
+                    Console.SetCursorPosition(0, i);
+                    Console.Write(new string(' ', Console.WindowWidth));
+                    Console.SetCursorPosition(0, i);
+                    Console.WriteLine("------" + PumpSet.pumpLine[i, 0].GetState() + "------" + PumpSet.pumpLine[i, 1].GetState() + "------" + PumpSet.pumpLine[i, 2].GetState() + "------");
+                }
+
+                // to exit the program press escape
+                if (GetAsyncKeyState(Keys.Escape))
+                {
+                    quit = true;
+                }
+
+            } while (!quit);
+        }
+    }
+}

@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace myAssignment
+{
+    class Van : Vehicle
+    {
+        public Van()
+        {
+            maxFuel = 80;
+            currentFuel = random.Next(0, (int)(maxFuel * 0.25f));
+        }
+
+    }
+}

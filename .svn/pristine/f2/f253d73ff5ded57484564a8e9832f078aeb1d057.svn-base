@@ -1,0 +1,89 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    class Pump
+    {
+        private const double PRICE = 2;
+        private const double SPEED = 1.5;
+        private enum PumpState { Empty, Busy };
+        private PumpState state = PumpState.Empty;
+        private int id;
+        private static int totalDispensed = 0;
+        private static double totalEarned = 0.0;
+        private int toDispense;
+
+        public Pump(int _id)
+        {
+            id = _id;
+        }
+
+        public void PumpLine()
+        {
+            switch (state)
+            {
+                case PumpState.Empty:
+                default:
+                    //Console.WriteLine("Empty");
+                    try
+                    {
+                        if (Program.queue.Peek() != null)
+                        {
+                            state = PumpState.Busy;
+                            Vehicle v = Program.queue.Dequeue();
+                            //double workTime = v.HowMuchFuelNeeded() / SPEED;
+                            toDispense = v.HowMuchFuelNeeded();
+                            double workTime = 18;
+                            PumpTimer(workTime);
+                            Console.WriteLine("{0}: Busy, {1}, {2} litres.", id, v.GetType().Name, toDispense);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    break;
+
+                case PumpState.Busy:
+                    break;
+            }
+        }
+
+        void PumpTimer(double interval)
+        {
+            Timer FuelTimer = new Timer();
+            FuelTimer.Interval = interval*1000;
+            FuelTimer.Enabled = true;
+            FuelTimer.Elapsed += PumpBusy;
+        }
+
+        private void PumpBusy(object sender, ElapsedEventArgs e)
+        {
+            totalDispensed += toDispense;
+            totalEarned += toDispense * PRICE;
+            state = PumpState.Empty;
+            Console.WriteLine("{0}: Empty, total dispensed: {1}, earned: {2}", id, totalDispensed, totalEarned);
+        }
+
+//        if (Program.queue.Count != 0)
+//            {
+//                Program.queue.Peek();
+//                Program.queue.Dequeue();
+//                state = PumpState.Busy;
+//                Console.WriteLine(state);
+//                PumpTimer();
+//        checkState = false;
+//            }
+//            else
+//                state = PumpState.Empty;
+//            Console.WriteLine(state);
+//
+
+
+
+    }
+}

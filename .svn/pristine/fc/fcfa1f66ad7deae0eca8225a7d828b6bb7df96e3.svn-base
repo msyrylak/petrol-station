@@ -1,0 +1,75 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    class VehicleGenerator
+    {
+        public static Random random = new Random();
+        public static bool allowed = true;
+
+#if DEBUG
+        public static int NumObjects = 0;
+#endif
+
+        public static void SetTimer()
+        {
+            Timer timer = new Timer();
+            timer.Interval = 1500;
+            timer.Enabled = true;
+            timer.Elapsed += Timer_Elapsed;
+        }
+
+        private static void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            allowed = true;
+        }
+
+        public static void GetVehicle()
+        {
+            if (allowed)
+            {
+                int type = random.Next(0, 3);
+                Vehicle v;
+                switch (type)
+                {
+                    case 0:
+                    default:
+                        v = new Car();
+                        break;
+
+                    case 1:
+                        v = new Van();
+                        break;
+
+                    case 2:
+                        v = new HGV();
+                        break;
+                }
+                Program.queue.Enqueue(v);
+                Vehicle.numberOfVehiclesCreated++;
+                //Console.WriteLine("Next in line: {0}", Program.queue.Peek());
+                Console.WriteLine();
+                Console.SetCursorPosition(0, 5);
+                Console.WriteLine("Next in line: \n{0}, Fuel = {1}/{2}\t", v.GetType().Name, v.currentFuel, v.maxFuel);
+                Console.WriteLine(); 
+                Console.WriteLine("Number of vehicles created: {0}", Vehicle.numberOfVehiclesCreated);
+                Console.WriteLine();
+                Console.WriteLine("Total dispensed: {0}", Pump.totalDispensed);
+                Console.WriteLine("Total earned: {0}", Pump.totalEarned);
+                Console.WriteLine("Commission: {0}", Pump.commission);
+
+                allowed = false;
+                Timer timer = new Timer();
+                timer.AutoReset = false;
+                timer.Interval = 1500;
+                timer.Enabled = true;
+                timer.Elapsed += Timer_Elapsed;
+            }
+        }
+    }
+}

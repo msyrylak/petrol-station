@@ -1,0 +1,84 @@
+﻿using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    public abstract class Vehicle
+    {
+        // variables
+        public int maxFuel;
+        public int currentFuel;
+        public string fuelType;
+        public static Random random = null;
+        public bool leave = true;
+        public enum State { Waiting, Fueling, Fueled };
+        public State vState = State.Waiting;
+
+
+        public Vehicle()
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            leave = false;
+            Timer timer = new Timer();
+            timer.AutoReset = false;
+            timer.Interval = random.Next(1000,2000);
+            timer.Enabled = true;
+            timer.Elapsed += PumpChecked;
+        }
+
+        // event for a timer: if the state of a vehicle is still waiting after service time has expired 
+        // change the bool variable to true thus enabling the vehicle to leave the forecourt
+        private void PumpChecked(object sender, ElapsedEventArgs e)
+        {
+            if (vState == State.Waiting)
+            {
+                leave = true;
+            }
+        }
+
+        // return vehicle state
+        public State CheckState()
+        {
+            return vState;
+        }
+
+
+        /// <summary>
+        /// virtual method that generates fuel type for each vehicle
+        /// </summary>
+        public virtual void FuelType()
+        {
+            int type = random.Next(0, 3);
+            switch (type)
+            {
+                case 0:
+                default:
+                    fuelType = "Unleaded";
+                    break;
+
+                case 1:
+                    fuelType = "Diesel";
+                    break;
+
+                case 2:
+                    fuelType = "LPG";
+                    break;               
+            }
+        }
+
+        // calculate the number of litres a vehicle needs
+        public int HowMuchFuelNeeded()
+        {
+            return maxFuel - currentFuel;
+        }
+    }
+}

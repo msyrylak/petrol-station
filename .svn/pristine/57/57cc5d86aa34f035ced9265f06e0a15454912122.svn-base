@@ -1,0 +1,65 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    class VehicleGenerator
+    {
+        public static Random random = new Random();
+        public static bool allowed = true;
+
+#if DEBUG
+        public static int NumObjects = 0;
+#endif
+
+        public static void SetTimer()
+        {
+            Timer timer = new Timer();
+            timer.Interval = 1500;
+            timer.Enabled = true;
+            timer.Elapsed += Timer_Elapsed;
+        }
+
+        private static void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            allowed = true;
+        }
+
+        public static void GetVehicle()
+        {
+            if (allowed)
+            {
+                int type = random.Next(0, 3);
+                Vehicle v;
+                switch (type)
+                {
+                    case 0:
+                    default:
+                        v = new Car();
+                        break;
+
+                    case 1:
+                        v = new Van();
+                        break;
+
+                    case 2:
+                        v = new HGV();
+                        break;
+                }
+                Program.queue.Enqueue(v);
+                Vehicle.numberOfVehiclesCreated++;
+                Console.WriteLine("\tAdded {0}, Fuel = {1}/{2}\t", v.GetType().Name, v.currentFuel, v.maxFuel);                
+                allowed = false;
+                Timer timer = new Timer();
+                timer.AutoReset = false;
+                timer.Interval = 1500;
+                timer.Enabled = true;
+                timer.Elapsed += Timer_Elapsed;
+            }
+        }
+    }
+}

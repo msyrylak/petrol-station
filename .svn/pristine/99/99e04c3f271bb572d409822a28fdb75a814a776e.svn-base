@@ -1,0 +1,64 @@
+﻿using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace myAssignment
+{
+    public abstract class Vehicle
+    {
+        //variables
+        public int maxFuel;
+        public int currentFuel;
+        public string fuelType;
+        public static Random random = null;
+        public static int numberOfVehiclesCreated = 0;
+
+        public Vehicle()
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+        }
+
+        /// <summary>
+        /// method that generates fuel type for each vehicle
+        /// </summary>
+        public void FuelType()
+        {
+            int type = random.Next(0, 3);
+            switch (type)
+            {
+                case 0:
+                default:
+                    fuelType = "Unleaded";
+                    break;
+
+                case 1:
+                    fuelType = "Diesel";
+                    break;
+
+                case 2:
+                    fuelType = "LPG";
+                    break;
+
+            }
+        }
+
+        //        enum VehicleState
+        //        {
+        //            Waiting, Fueling, Fueled
+        //        };
+
+        //calculates the number of litres a vehicle needs
+        public int HowMuchFuelNeeded()
+        {
+            return maxFuel - currentFuel;
+        }
+
+    }
+}

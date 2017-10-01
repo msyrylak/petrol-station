@@ -1,0 +1,24 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace myAssignment
+{
+    class HGV : Vehicle
+    {
+        /// <summary>
+        /// declares a maximum number of fuel
+        /// gets the number of current fuel that vehicle has
+        /// calls a method FuelType() to generate a type of fuel a vehicle runs on
+        /// </summary>
+        public HGV()
+        {
+            maxFuel = 150;
+            currentFuel = random.Next(0, (int)(maxFuel * 0.25f));
+            FuelType();
+
+        }
+    }
+}

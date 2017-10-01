@@ -1,0 +1,6 @@
+C:\Projects\myAssignment\myAssignment\bin\Release\myAssignment.exe.config
+C:\Projects\myAssignment\myAssignment\bin\Release\myAssignment.exe
+C:\Projects\myAssignment\myAssignment\bin\Release\myAssignment.pdb
+C:\Projects\myAssignment\myAssignment\obj\Release\myAssignment.exe
+C:\Projects\myAssignment\myAssignment\obj\Release\myAssignment.pdb
+C:\Projects\myAssignment\myAssignment\obj\Release\myAssignment.csprojResolveAssemblyReference.cache

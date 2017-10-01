@@ -1,0 +1,230 @@
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    class Pump
+    {
+        // variables declaration
+        public static Random random = new Random();
+        private const double PRICE = 2;
+        private const double SPEED = 1.5;
+        public enum PumpState { Empty, Busy, Ended };
+        public PumpState state = PumpState.Empty;
+        private int id;
+        private static int unleadedDispensed = 0; // unleaded
+        private static int dieselDispensed = 0; // diesel
+        private static int lpgDispensed = 0; // lpg
+        private static double totalEarned = 0.0;
+        private static int toDispense;
+        private static double commission;
+        private Vehicle current;
+        private static string t;
+        private static string n;
+        public static int vehiclesServiced = 0;
+
+        // accessors for my private variables
+        public static int TotalDispensed
+        {
+            get
+            {
+                return unleadedDispensed;
+            }
+            set
+            {
+                unleadedDispensed = value;
+            }
+        }
+
+        public static double TotalEarned
+        {
+            get
+            {
+                return totalEarned;
+            }
+            set
+            {
+                totalEarned = value;
+            }
+        }
+
+        public static double Commission
+        {
+            get
+            {
+                return commission;
+            }
+            set
+            {
+                commission = value;
+            }
+        }
+
+        public static int ToDispense
+        {
+            get
+            {
+                return toDispense;
+            }
+            set
+            {
+                toDispense = value;
+            }
+        }
+
+        public static int DieselDispensed
+        {
+            get
+            {
+                return dieselDispensed;
+            }
+            set
+            {
+                dieselDispensed = value;
+            }
+        }
+
+        public static int LPGDispensed
+        {
+            get
+            {
+                return lpgDispensed;
+            }
+            set
+            {
+                lpgDispensed = value;
+            }
+        }
+
+        // constructor accepting an id for a pump
+        public Pump(int _id)
+        {
+            id = _id;
+        }
+
+        // return pump state
+        public PumpState GetState()
+        {
+            return state;
+        }
+
+        /// <summary>
+        /// this method manages the pumps line 
+        /// switch statement checks the state of a pump and 
+        /// if the pump is empty it dequeues a vehicle from the line, changes the state to busy and starts timer (fueling time)
+        /// if the state is busy then it returns with no action
+        /// with ended state it records all information needed for the counters, calls method RecordTransactions() and changes state back to empty
+        /// </summary>
+        public void PumpLine()
+        {
+            switch (state)
+            {
+                case PumpState.Empty:
+                default:
+                    try
+                    {
+                        if (Program.queue.Count() > 0)
+                        {
+                            state = PumpState.Busy;
+                            current = Program.queue.First();
+                            Program.queue.Remove(current);
+                            //double workTime = v.HowMuchFuelNeeded() / SPEED;
+                            n = current.GetType().Name;
+                            toDispense = current.HowMuchFuelNeeded();
+                            t = current.fuelType;
+                            double workTime = random.Next(17, 19);
+                            current.state = Vehicle.State.Fueling;
+                            PumpTimer(workTime);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error: {0}", ex.ToString());
+                    }
+                    break;
+
+                case PumpState.Busy:
+                    break;
+
+                case PumpState.Ended:
+                    //unleadedDispensed += toDispense;
+                    FuelCounters();
+                    totalEarned += toDispense * PRICE;
+                    commission += 0.01 * totalEarned;
+                    RecordTransactions();
+                    vehiclesServiced++;
+                    state = PumpState.Empty;
+                    //Vehicle.state = Vehicle.State.Fueled;
+                    break;
+            }
+        }
+
+        // timer for the pumps
+        void PumpTimer(double interval)
+        {
+            Timer FuelTimer = new Timer();
+            FuelTimer.AutoReset = false;
+            FuelTimer.Interval = interval * 1000;
+            FuelTimer.Enabled = true;
+            FuelTimer.Elapsed += PumpBusy;
+        }
+
+        // event that manages the timer
+        private void PumpBusy(object sender, ElapsedEventArgs e)
+        {
+            state = PumpState.Ended;
+        }
+
+        /// <summary>
+        /// method used to record all transactions performed at the pumps
+        /// it appends to a text file writing all the important informations:
+        /// ID of a pump, vehicle type and number of litres dispensed while the vehicle was being served
+        /// </summary>
+        public void RecordTransactions()
+        {
+            int dispensed = toDispense;
+
+            try
+            {
+                String filePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)+ "\\fuelling_transactions.txt";
+                StreamWriter sw = new StreamWriter(filePath, append: true);
+                sw.WriteLine("{0} | Pump {1}: {2}, litres dispensed: {3}", DateTime.Now, id + 1, n, dispensed);
+                sw.WriteLine("----------");
+                sw.Close();
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: Pump {0} had a problem with file operation! {1}", id + 1, ex.ToString());
+                System.Threading.Thread.Sleep(2000);
+            }
+        }
+
+        /// <summary>
+        /// method that sorts out based on fuel type which counter 
+        /// to use
+        /// </summary>
+        public void FuelCounters()
+        {
+            switch (t)
+            {
+                case "Unleaded":
+                    unleadedDispensed += toDispense;
+                    break;
+                case "Diesel":
+                    dieselDispensed += toDispense;
+                    break;
+                case "LPG":
+                    lpgDispensed += toDispense;
+                    break;
+
+            }
+        }
+
+    }
+}

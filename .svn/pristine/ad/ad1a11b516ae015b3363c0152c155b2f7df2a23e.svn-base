@@ -1,0 +1,156 @@
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    class Pump
+    {
+        //variables declaration
+        public static Random random = new Random();
+        private const double PRICE = 2;
+        private const double SPEED = 1.5;
+        public enum PumpState { Empty, Busy, Ended };
+        public PumpState state = PumpState.Empty;
+        private int id;
+        private static int totalDispensed = 0;
+        private static double totalEarned = 0.0;
+        private int toDispense;
+        private static double commission;
+        private Vehicle current;
+
+        //accessors for my private variables
+        public static int TotalDispensed
+        {
+            get
+            {
+                return totalDispensed;
+            }
+            set
+            {
+                totalDispensed = value;
+            }
+        }
+
+        public static double TotalEarned
+        {
+            get
+            {
+                return totalEarned;
+            }
+            set
+            {
+                totalEarned = value;
+            }
+        }
+
+        public static double Commission
+        {
+            get
+            {
+                return commission;
+            }
+            set
+            {
+                commission = value;
+            }
+        }
+
+        public Pump(int _id)
+        {
+            id = _id;
+        }
+
+        //method that returns pump state
+        public PumpState GetState()
+        {
+            return state;
+        }
+
+        /// <summary>
+        /// this method manages the pumps line 
+        /// switch statement checks the state of a pump and 
+        /// if the pump is empty it dequeues a vehicle from the line, changes the state to busy and starts timer (fueling time)
+        /// if the state is busy then it moves on to another pump
+        /// with ended state it records all information needed for the counters, calls method RecordTransactions() and changes state back to empty
+        /// </summary>
+        public void PumpLine()
+        {
+            switch (state)
+            {
+                case PumpState.Empty:
+                default:
+                    try
+                    {
+                        if (Program.queue.Peek() != null)
+                        {
+                            state = PumpState.Busy;
+                            current = Program.queue.Dequeue();
+                            //double workTime = v.HowMuchFuelNeeded() / SPEED;
+                            toDispense = current.HowMuchFuelNeeded();
+                            double workTime = 18;
+                            PumpTimer(workTime);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    break;
+
+                case PumpState.Busy:
+                    break;
+
+                case PumpState.Ended:
+                    totalDispensed += toDispense;
+                    totalEarned += toDispense * PRICE;
+                    commission += 0.01 * totalEarned;
+                    RecordTransactions();
+                    state = PumpState.Empty;
+                    break;
+            }
+        }
+
+        //timer for the pumps
+        void PumpTimer(double interval)
+        {
+            Timer FuelTimer = new Timer();
+            FuelTimer.Interval = interval * 1000;
+            FuelTimer.Enabled = true;
+            FuelTimer.Elapsed += PumpBusy;
+        }
+
+        //event that manages the timer
+        private void PumpBusy(object sender, ElapsedEventArgs e)
+        {
+            state = PumpState.Ended;
+        }
+
+        /// <summary>
+        /// method used to record all transactions performed at the pumps
+        /// creates a text file where it writes all the important informations:
+        /// ID of a pump, vehicle type and number of litres dispensed while the vehicle was being served
+        /// </summary>
+        public void RecordTransactions()
+        {
+            int dispensed = toDispense;
+                        
+            try
+            {
+                StreamWriter sw = new StreamWriter(@"C:\Users\Maja\Desktop\fuelling_transactions.txt", append: true);
+                sw.WriteLine("{0} | Pump {1}: {2}, litres dispensed: {3}", DateTime.Now, id+1, current.GetType().Name, dispensed);
+                sw.WriteLine("----------");                
+                sw.Close();
+
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+    }
+}

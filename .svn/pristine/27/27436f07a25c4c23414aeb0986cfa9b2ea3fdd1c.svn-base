@@ -1,0 +1,102 @@
+﻿using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace myAssignment
+{
+    public abstract class Vehicle
+    {
+        //variables
+        public int maxFuel;
+        public int currentFuel;
+        public string fuelType;
+        public static Random random = null;
+        public static int numberOfVehiclesCreated = 0;
+        public static int numberOfVehiclesGone = 0;
+        public bool leave = true;
+        public enum State { Waiting, Fueling, Fueled };
+        public State state = State.Waiting;
+
+
+        public Vehicle()
+        {
+            if (random == null)
+            {
+                random = new Random();
+            }
+
+            leave = false;
+            Timer timer = new Timer();
+            timer.AutoReset = false;
+            timer.Interval = 1500;
+            timer.Enabled = true;
+            timer.Elapsed += PumpChecked;
+        }
+
+        private void PumpChecked(object sender, ElapsedEventArgs e)
+        {
+            if (state == State.Waiting)
+            {
+                leave = true;
+            }
+        }
+
+        // return vehicle state
+        public State CheckState()
+        {
+            return state;
+        }
+
+
+        /// <summary>
+        /// method that generates fuel type for each vehicle
+        /// </summary>
+        public void FuelType()
+        {
+            int type = random.Next(0, 3);
+            switch (type)
+            {
+                case 0:
+                default:
+                    fuelType = "Unleaded";
+                    break;
+
+                case 1:
+                    fuelType = "Diesel";
+                    break;
+
+                case 2:
+                    fuelType = "LPG";
+                    break;
+
+            }
+        }
+
+        // calculate the number of litres a vehicle needs
+        public int HowMuchFuelNeeded()
+        {
+            return maxFuel - currentFuel;
+        }
+
+
+        //        public void CheckPump()
+        //        {
+        //
+        //            for (int i = 0; i < PumpSet.pumpLine.GetLength(0); i++)
+        //            {
+        //                for (int j = 0; j < PumpSet.pumpLine.GetLength(1); j++)
+        //                {
+        //                    PumpSet.pumpLine[i, j].GetState();
+        //                }
+        //
+        //            }
+        //
+        //        }
+
+
+    }
+}

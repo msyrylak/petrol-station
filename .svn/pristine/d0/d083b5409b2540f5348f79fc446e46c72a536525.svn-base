@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Runtime.InteropServices;
+
+//myAssignment
+//Author: Maja Syrylak
+//SID: 1611379
+//Edited: 22/04/2017
+
+namespace myAssignment
+{
+    class Program
+    {
+        public static Random random = new Random();
+
+        //creates a queue of vehicles
+        public static Queue<Vehicle> queue = new Queue<Vehicle>();
+
+        [DllImport("user32.dll")] //import user32.dll library for GetAsyncKeyState function
+        public static extern bool GetAsyncKeyState(Keys vkey); 
+
+        static void Main(string[] args)
+        {
+            //creates an array of pumps 
+            Pump[,] pumpLine = new Pump[3, 3];
+
+            //a for loop to create pumps
+            for (int i = 0; i < pumpLine.GetLength(0); i++)
+            {
+                for (int j = 0; j < pumpLine.GetLength(1); j++)
+                {
+                    pumpLine[i, j] = new Pump(i * pumpLine.GetLength(1) + j);
+                }
+            }
+
+            bool quit = false;     
+            do
+            {
+                VehicleGenerator.GetVehicle();  //calls a method creating new vehicles
+
+                //iterates over every pump and calls a PumpLine() method
+                for (int i = 0; i < pumpLine.GetLength(0); i++)
+                {
+                    for (int j = 0; j < pumpLine.GetLength(1); j++)
+                    {
+                        pumpLine[i, j].PumpLine();
+                    }
+
+                }
+
+                //displays pump lanes
+                Console.SetCursorPosition(0, 0);
+                for (int i = 0; i < pumpLine.GetLength(0); i++)
+                {
+
+                    Console.WriteLine("------" + pumpLine[i, 0].GetState() + "------" + pumpLine[i, 1].GetState() + "------" + pumpLine[i, 2].GetState() + "------");
+                }
+
+                //to exit the program press escape
+                if (GetAsyncKeyState(Keys.Escape))
+                {
+                    quit = true;
+                }
+
+            } while (!quit);
+        }
+    }
+}
